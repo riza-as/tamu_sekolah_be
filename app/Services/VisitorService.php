@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Resources\VisitorResource;
 use App\Models\Visitor;
+use App\Models\School;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -154,8 +155,10 @@ class VisitorService extends ResponseService
         return $this->successJsonResponse(200, null, 'Berhasil menampilkan data pengunjung', new VisitorResource($visitor));
     }
 
-    public function storeVisitor($request, $village_code)
+    public function storeVisitor($request, $school_id)
     {
+
+        $school = School::find($school_id);
 
         // Cek jika ada file yang diunggah
         if ($request->hasFile('photo_visitor')) {
@@ -185,7 +188,8 @@ class VisitorService extends ResponseService
         }
         $visitor = Visitor::create([
             'visitor_type_id' => $request->visitor_type_id,
-            'village_code' => $village_code,
+            'school_id' => $school_id,
+            'village_code' => $school->village_id, // Asumsikan village_code diambil dari village_id sekolah
             'fullname' => $request->fullname,
             'address' => $request->address,
             'photo_visitor' => url($request->photo_visitor),

@@ -40,7 +40,7 @@ Route::middleware('cors')->prefix('v1')->group(function () {
     Route::get('objective', [ObjectiveController::class, 'index']);
 
     // Send Visitor
-    Route::post('visitor/{village_code}', [VisitorController::class, 'store']);
+    Route::post('visitor/{school_id}', [VisitorController::class, 'store']);
 
     // Subdistrict Visitor
     Route::post('subdistrict-visitor/{subdistrict_code}', [SubdistrictVisitorController::class, 'store']);

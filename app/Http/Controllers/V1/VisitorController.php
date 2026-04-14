@@ -33,9 +33,9 @@ class VisitorController extends Controller
         return $this->visitorService->showVisitor($id);
     }
 
-    public function store(StoreVisitorRequest $request, $village_code)
+    public function store(StoreVisitorRequest $request, $school_id)
     {
-        return $this->visitorService->storeVisitor($request, $village_code);
+        return $this->visitorService->storeVisitor($request, $school_id);
     }
 
     public function destroy($id)

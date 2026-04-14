@@ -35,7 +35,7 @@ class DistrictService extends ResponseService
         }
 
         // Response JSON
-        return $this->listJsonResponse(200, null, 'Berhasil menampilkan data abupaten/ kota', DistrictResource::collection($districts));
+        return $this->listJsonResponse(200, null, 'Berhasil menampilkan data Kabupaten/ kota', DistrictResource::collection($districts));
     }
 
     public function storeDistrict($request, $province_code)
