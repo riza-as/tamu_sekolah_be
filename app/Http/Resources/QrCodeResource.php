@@ -13,6 +13,7 @@ class QrCodeResource extends JsonResource
         return [
             'id' => $this->id,
             'village_code' => new VillageResource(Village::where('code', $this->village_code)->first()),
+            'school' => new SchoolResource($this->school),
             'link_qr_code' => $this->link_qr_code,
             'status' => $this->status,
             'created_at' => $this->created_at

@@ -33,6 +33,12 @@ class VisitorService extends ResponseService
             $visitorMonth = Visitor::whereMonth('created_at', $thisMonth)->count();
             $visitorYear  = Visitor::whereYear('created_at', $thisYear)->count();
         }
+        if ($user->level === 4) {
+            $visitorTotal = Visitor::where('school_code', $user->profile->school_code)->count();
+            $visitorToday = Visitor::where('school_code', $user->profile->school_code)
+                ->whereDate('created_at', $today)
+                ->count();
+        }
         return response()->json([
             "code" => 200,
             "status" => "success",
@@ -52,30 +58,63 @@ class VisitorService extends ResponseService
         $user = Auth::user();
         $year = request()->get('year') ?? now()->year;
 
-        $total = DB::select("SELECT
+        // ADMIN SEKOLAH
+        if ($user->level === 4) {
+
+            $total = DB::select("
+            SELECT
                 m.month_number AS month_number,
                 m.month_name AS month_name,
-                -- COALESCE(profiles.village_code, 0) AS village_code,
+                CASE
+                    WHEN COALESCE(visitors.school_code, 0) = 0
+                    THEN 0
+                    ELSE COALESCE(COUNT(DISTINCT visitors.id), 0)
+                END AS total_visitor
+            FROM months m
+            LEFT JOIN visitors
+                ON CAST(m.month_number AS INTEGER) = EXTRACT(MONTH FROM visitors.created_at)
+                AND EXTRACT(YEAR FROM visitors.created_at) = ?
+                AND visitors.school_code = ?
+            GROUP BY
+                m.month_number,
+                m.month_name,
+                visitors.school_code
+            ORDER BY
+                CAST(m.month_number AS INTEGER)
+        ", [
+                $year,
+                $user->profile->school_code
+            ]);
+        } else {
+
+            // ADMIN DESA / SUPERADMIN (lama)
+            $total = DB::select("
+            SELECT
+                m.month_number AS month_number,
+                m.month_name AS month_name,
                 CASE
                     WHEN COALESCE(profiles.village_code, 0) = 0
                     THEN 0
                     ELSE COALESCE(COUNT(DISTINCT v.id), 0)
                 END AS total_visitor
-                FROM
-                    months m
-                LEFT JOIN
-                    visitors v
-                    ON CAST(m.month_number AS INTEGER) = EXTRACT(MONTH FROM v.created_at)
-                    AND EXTRACT(YEAR FROM v.created_at) = ?
-                LEFT JOIN
-                    profiles
-                    ON v.village_code = profiles.village_code
-                    AND profiles.village_code = ?
-                GROUP BY
-                    m.month_number, m.month_name, profiles.village_code
-                ORDER BY
-                    CAST(m.month_number AS INTEGER);
-            ", [$year, $user->profile->village_code]);
+            FROM months m
+            LEFT JOIN visitors v
+                ON CAST(m.month_number AS INTEGER) = EXTRACT(MONTH FROM v.created_at)
+                AND EXTRACT(YEAR FROM v.created_at) = ?
+            LEFT JOIN profiles
+                ON v.village_code = profiles.village_code
+                AND profiles.village_code = ?
+            GROUP BY
+                m.month_number,
+                m.month_name,
+                profiles.village_code
+            ORDER BY
+                CAST(m.month_number AS INTEGER)
+        ", [
+                $year,
+                $user->profile->village_code
+            ]);
+        }
 
         return response()->json([
             'code' => 200,
@@ -92,21 +131,29 @@ class VisitorService extends ResponseService
         $limit = max(1, (int) request()->get('limit', 40));
 
         // Base query
-        $query = Visitor::with(['village', 'visitorType', 'objective'])
+        $query = Visitor::with(['school', 'school.level', 'school.status', 'village', 'visitorType', 'objective'])
             ->leftJoin('villages', 'villages.code', '=', 'visitors.village_code')
             ->leftJoin('visitor_types', 'visitor_types.id', '=', 'visitors.visitor_type_id')
             ->leftJoin('objectives', 'objectives.id', '=', 'visitors.objective_id')
             ->orderBy('visitors.created_at', 'desc');
+
 
         // Restrict level 2
         if ($user->level === 2) {
             $query->where('villages.code', $user->profile->village_code);
         }
 
+        // Restrict level 4 (Sekolah)
+        if ($user->level === 4) {
+            $query->where('visitors.school_code', $user->profile->school_code);
+        }
+
         // Filter by params
-        if (request()->hasAny(['name', 'village_code', 'visitor_type_id', 'objective_id', 'created_at'])) {
+        if (request()->hasAny(['name','school_code', 'village_code', 'visitor_type_id', 'objective_id', 'created_at'])) {
             $query->when(request('name'), function ($q, $name) {
                 $q->where('visitors.fullname', 'ilike', '%' . $name . '%');
+            })->when(request('school_code'), function ($q, $schoolCode) {
+                $q->where('visitors.school_code', $schoolCode);
             })->when(request('village_code'), function ($q, $villageCode) {
                 $q->where('visitors.village_code', $villageCode);
             })->when(request('visitor_type_id'), function ($q, $visitorTypeId) {
@@ -133,9 +180,13 @@ class VisitorService extends ResponseService
             });
         } else if ($user->level === 2) {
             $query->where('visitors.village_code', $user->profile->village_code);
+        } else if ($user->level === 4) {
+            $query->where('visitors.school_code', $user->profile->school_code);
         }
+
         // Paginate data
-        $visitors = $query->paginate($limit, ['visitors.*'], 'page', $page);
+        $visitors = $query->paginate($limit);
+
 
         // Check if data is empty
         if ($visitors->isEmpty()) {
@@ -146,6 +197,26 @@ class VisitorService extends ResponseService
         return $this->listJsonResponse(200, null, 'Berhasil menampilkan data pengunjung', VisitorResource::collection($visitors));
     }
 
+    // public function getVisitorSchool($school_code)
+    // {
+    //     $visitors = Visitor::where('school_code', $school_code)->get();
+
+    //     if ($visitors->isEmpty()) {
+    //         return $this->errorListJsonResponse(
+    //             404,
+    //             null,
+    //             'Pengunjung tidak ditemukan'
+    //         );
+    //     }
+
+    //     return $this->listJsonResponse(
+    //         200,
+    //         null,
+    //         'Berhasil menampilkan data pengunjung sekolah',
+    //         VisitorResource::collection($visitors)
+    //     );
+    // }
+
     public function showVisitor($id)
     {
         $visitor = Visitor::find($id);
@@ -155,11 +226,9 @@ class VisitorService extends ResponseService
         return $this->successJsonResponse(200, null, 'Berhasil menampilkan data pengunjung', new VisitorResource($visitor));
     }
 
-    public function storeVisitor($request, $school_id)
+    public function storeVisitor($request, $school_id,)
     {
-
-        $school = School::find($school_id);
-
+        $school = School::where('school_code', $school_id)->first();
         // Cek jika ada file yang diunggah
         if ($request->hasFile('photo_visitor')) {
 
@@ -188,8 +257,8 @@ class VisitorService extends ResponseService
         }
         $visitor = Visitor::create([
             'visitor_type_id' => $request->visitor_type_id,
-            'school_id' => $school_id,
-            'village_code' => $school->village_id, // Asumsikan village_code diambil dari village_id sekolah
+            'village_code' => $school->village_code,
+            'school_code' => $school->school_code,
             'fullname' => $request->fullname,
             'address' => $request->address,
             'photo_visitor' => url($request->photo_visitor),

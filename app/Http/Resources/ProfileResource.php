@@ -9,6 +9,7 @@ use App\Http\Resources\UserResource;
 use App\Http\Resources\VillageResource;
 use App\Models\District;
 use App\Models\Province;
+use App\Models\School;
 use App\Models\Subdistrict;
 use App\Models\User;
 use App\Models\Village;
@@ -21,13 +22,67 @@ class ProfileResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'user_id' => new UserResource(User::where('id', $this->user_id)->first()),
+
+            // 'user_id' => new UserResource(
+            //     User::where('id', $this->user_id)->first()
+            // ),
+
+            'user_id' => $this->user_id,
+
             'fullname' => $this->fullname,
+
             'photo_profile' => $this->photo_profile,
-            'province_code' => new ProvinceResource(Province::where('code', $this->province_code)->first()),
-            'district_code' => new DistrictResource(District::where('code', $this->district_code)->first()),
-            'subdistrict_code' => new SubdistrictResource(Subdistrict::where('code', $this->subdistrict_code)->first()),
-            'village_code' => new VillageResource(Village::where('code', $this->village_code)->first()),
+
+            // Province
+            'province_code' => $this->province_code != 0
+                ? new ProvinceResource(
+                    Province::where('code', $this->province_code)->first()
+                )
+                : new ProvinceResource(
+                    $this->school?->village?->subdistrict?->district?->province
+                ),
+
+            // District
+            'district_code' => $this->district_code != 0
+                ? new DistrictResource(
+                    District::where('code', $this->district_code)->first()
+                )
+                : new DistrictResource(
+                    $this->school?->village?->subdistrict?->district
+                ),
+
+            // Subdistrict
+            'subdistrict_code' => $this->subdistrict_code != 0
+                ? new SubdistrictResource(
+                    Subdistrict::where('code', $this->subdistrict_code)->first()
+                )
+                : new SubdistrictResource(
+                    $this->school?->village?->subdistrict
+                ),
+
+            // Village
+            'village_code' => $this->village_code != 0
+                ? new VillageResource(
+                    Village::where('code', $this->village_code)->first()
+                )
+                : new VillageResource(
+                    $this->school?->village
+                ),
+
+            // School
+            'school_code' => $this->school_code,
+
+            'school' => new SchoolResource($this->school),
         ];
+        // return [
+        //     'id' => $this->id,
+        //     'user_id' => new UserResource(User::where('id', $this->user_id)->first()),
+        //     'fullname' => $this->fullname,
+        //     'photo_profile' => $this->photo_profile,
+        //     'province_code' => new ProvinceResource(Province::where('code', $this->province_code)->first()),
+        //     'district_code' => new DistrictResource(District::where('code', $this->district_code)->first()),
+        //     'subdistrict_code' => new SubdistrictResource(Subdistrict::where('code', $this->subdistrict_code)->first()),
+        //     'village_code' => new VillageResource(Village::where('code', $this->village_code)->first()),
+        // ];
     }
 }

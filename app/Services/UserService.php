@@ -81,7 +81,8 @@ class UserService extends ResponseService
             'province_code' => 0,
             'district_code' => 0,
             'subdistrict_code' => 0,
-            'village_code' => 0
+            'village_code' => 0,
+            'school_code' => $request->school_code ?? null,
         ]);
 
         return $this->createdJsonResponse(201, null, 'Berhasil menambahkan data user', new UserResource($user));
@@ -142,6 +143,15 @@ class UserService extends ResponseService
         if ($user->level == 3) {
             $subdistrict_qr_code = SubdistrictQrCode::where('subdistrict_code', $user->profile->subdistrict_code)
                 ->update(['status' => $user->is_active]);
+        }
+
+        if ($user->level == 4 && $user->profile?->school_code) {
+            QrCode::where(
+                'school_code',
+                $user->profile->school_code
+            )->update([
+                'status' => $user->is_active
+            ]);
         }
 
         $message = $user->is_active

@@ -10,7 +10,7 @@ class Visitor extends Model
     protected $fillable = [
         'village_code',
         'fullname',
-        'school_id',
+        'school_code',
         'address',
         'visitor_type_id',
         'photo_visitor',
@@ -35,7 +35,7 @@ class Visitor extends Model
 
     public function school()
     {
-        return $this->belongsTo(School::class);
+         return $this->belongsTo(School::class, 'school_code', 'school_code');
     }
 
 }

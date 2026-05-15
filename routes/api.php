@@ -9,6 +9,7 @@ use App\Http\Controllers\V1\ProvinceController;
 use App\Http\Controllers\V1\QrCodeController;
 use App\Http\Controllers\V1\SubdistrictController;
 use App\Http\Controllers\V1\SubdistrictQrCodeController;
+use App\Http\Controllers\V1\SchoolController;
 use App\Http\Controllers\V1\TotalDataController;
 use App\Http\Controllers\V1\UserController;
 use App\Http\Controllers\V1\VillageController;
@@ -81,10 +82,11 @@ Route::middleware('jwt_verify')->prefix('v1')->group(function () {
     Route::group(['prefix' => 'qr-code'], function () {
         Route::get('', [QrCodeController::class, 'index']);
         Route::post('', [QrCodeController::class, 'store']);
+        Route::post('/school', [QrCodeController::class, 'storeSchoolQrCode']);
         Route::post('{id}/update', [QrCodeController::class, 'update']);
         Route::delete('{id}', [QrCodeController::class, 'destroy']);
     });
-    // Qr Code
+    // Qr Code Subdistrict
     Route::group(['prefix' => 'subdistrict-qr-code'], function () {
         Route::get('', [SubdistrictQrCodeController::class, 'index']);
         Route::post('', [SubdistrictQrCodeController::class, 'store']);
@@ -114,6 +116,7 @@ Route::middleware('jwt_verify')->prefix('v1')->group(function () {
         Route::get('chart', [VisitorController::class, 'chart']);
         Route::get('', [VisitorController::class, 'index']);
         Route::get('{id}', [VisitorController::class, 'show']);
+        // Route::get('school/{school_code}', [VisitorController::class, 'getVisitorSchool']);
         Route::delete('{id}', [VisitorController::class, 'destroy']);
     });
 
@@ -124,5 +127,14 @@ Route::middleware('jwt_verify')->prefix('v1')->group(function () {
         Route::get('', [SubdistrictVisitorController::class, 'index']);
         Route::get('{id}', [SubdistrictVisitorController::class, 'show']);
         Route::delete('{id}', [SubdistrictVisitorController::class, 'destroy']);
+    });
+
+    //School
+    Route::group(['prefix' => 'school'], function () {
+        Route::get('', [SchoolController::class, 'index']);
+        Route::get('{id}', [SchoolController::class, 'show']);
+        Route::post('', [SchoolController::class, 'store']);
+        Route::post('{school_code}/update', [SchoolController::class, 'update']);
+        Route::delete('{school_code}', [SchoolController::class, 'destroy']);
     });
 });

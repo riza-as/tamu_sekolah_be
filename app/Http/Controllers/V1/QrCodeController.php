@@ -28,6 +28,11 @@ class QrCodeController extends Controller
         return $this->qrCodeService->storeQrCode($request);
     }
 
+    public function storeSchoolQrCode(Request $request)
+    {
+        return $this->qrCodeService->storeSchoolQrCode($request);
+    }
+
     public function update(Request $request, $id)
     {
         return $this->qrCodeService->updateQrCode($request, $id);

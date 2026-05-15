@@ -189,6 +189,7 @@ class ProfileService extends ResponseService
             'district_code' => $request->district_code ?? $profile->district_code,
             'subdistrict_code' => $request->subdistrict_code ?? $profile->subdistrict_code,
             'village_code' => $request->village_code ?? $profile->village_code,
+            'school_code' => $request->school_code ?? $profile->school_code,
         ]);
         return $this->updatedJsonResponse(200, null, 'Berhasil memperbarui data profil', new ProfileResource($profile));
     }

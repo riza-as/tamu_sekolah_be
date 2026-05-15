@@ -12,7 +12,7 @@ class AuthService extends ResponseService
 {
     public function authLogin($data)
     {
-        if (!isset($data['username']) || !isset($data['password'])) {
+         if (!isset($data['username']) || !isset($data['password'])) {
             return response()->json([
                 'code' => 400,
                 'status' => 'failed',

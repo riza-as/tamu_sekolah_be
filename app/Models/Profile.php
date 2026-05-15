@@ -16,6 +16,7 @@ class Profile extends Model
         'district_code',
         'subdistrict_code',
         'village_code',
+        'school_code'
     ];
 
     public function user()
@@ -41,5 +42,10 @@ class Profile extends Model
     public function village()
     {
         return $this->belongsTo(Village::class);
+    }
+
+    public function school()
+    {
+        return $this->belongsTo(School::class, 'school_code', 'school_code');
     }
 }

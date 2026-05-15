@@ -26,6 +26,7 @@ class VisitorController extends Controller
     public function index()
     {
         return $this->visitorService->getVisitor();
+    
     }
 
     public function show($id)
@@ -42,4 +43,9 @@ class VisitorController extends Controller
     {
         return $this->visitorService->destroyVisitor($id);
     }
+
+    // public function getVisitorSchool($school_code)
+    // {
+    //     return $this->visitorService->getVisitorSchool($school_code);
+    // }
 }

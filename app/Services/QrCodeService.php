@@ -26,6 +26,16 @@ class QrCodeService extends ResponseService
                 });
         }
 
+        //Filter For qr code school
+        if (request()->hasAny(['school_code', 'name'])) {
+            $query->when(request('school_code'), function ($q, $school_code) {
+                $q->where('qr_codes.school_code', $school_code);
+            })
+                ->when(request('name'), function ($q, $name) {
+                    $q->where('schools.name', 'like', '%' . $name . '%');
+                });
+        }
+
         // Paginate data
         $qr_codes = $query->paginate($limit, ['qr_codes.*'], 'page', $page);
 
@@ -55,6 +65,23 @@ class QrCodeService extends ResponseService
             'status'       => 1
         ]);
         return $this->createdJsonResponse(201, null, 'Berhasil menambahkan data kode QR', new QrCodeResource($qr_code));
+    }
+
+    public function storeSchoolQrCode($request)
+    {
+        $qr_code = QrCode::create([
+            'school_code' => $request->school_code,
+            'link_qr_code' => "https://tamusekolah.id/form/school/$request->school_code",
+            'status' => 1
+        ]);
+
+        return $this->createdJsonResponse(
+            201,
+            null,
+            'Berhasil membuat QR sekolah',
+            new QrCodeResource($qr_code)
+        );
+
     }
 
     public function updateQrCode($request, $id)
