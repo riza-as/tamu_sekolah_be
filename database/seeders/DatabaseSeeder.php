@@ -13,13 +13,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::create([
-            'username' => 'superadmin',
-            'email' => 'superadmin@example.com',
-            'password' => bcrypt('pass3'),
-            'level' => 1
-        ]);
+       
     }
 }

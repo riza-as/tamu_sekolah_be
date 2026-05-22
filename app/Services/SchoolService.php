@@ -87,13 +87,24 @@ class SchoolService extends ResponseService
 
     public function storeSchool($request)
     {
+      
+        $request->validate([
+            'school_code'  => 'required|unique:schools,school_code',
+            'name'         => 'required',
+            'address'      => 'required',
+            'village_code' => 'required',
+            'level_id'     => 'required',
+            'status_id'    => 'required',
+        ]);
+
+        // Sekarang simpan datanya
         $school = School::create([
-            'name' => $request->name,
-            'address' => $request->address,
+            'name'         => $request->name,
+            'address'      => $request->address,
             'village_code' => $request->village_code,
-            'school_code' => $request->school_code,
-            'level_id' => $request->level_id,
-            'status_id' => $request->status_id,
+            'school_code'  => $request->school_code,
+            'level_id'     => $request->level_id,
+            'status_id'    => $request->status_id,
         ]);
 
         return $this->createdJsonResponse(

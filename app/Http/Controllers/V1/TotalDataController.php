@@ -11,9 +11,9 @@ class TotalDataController extends Controller
 {
     public function index()
     {
-        $village_admin = Profile::with('user')
+        $school_admin = Profile::with('user')
             ->whereHas('user', function ($query) {
-                $query->where('level', 2);
+                $query->where('level', 4);
             })
             ->distinct()
             ->count();
@@ -23,16 +23,16 @@ class TotalDataController extends Controller
             })
             ->distinct()
             ->count();
-        $village_visitor = Visitor::count();
+        $school_visitor = Visitor::count();
         $subdistrict_visitor = SubdistrictVisitor::count();
         return response()->json([
             "code" => 200,
             "status" => "success",
             "message" => "Berhasil menampilkan jumlah data",
             "data" => [
-                "village_admin" => $village_admin,
+                "school_admin" => $school_admin,
                 "subdistrict_admin" => $subdistrict_admin,
-                "village_visitor" => $village_visitor,
+                "school_visitor" => $school_visitor,
                 "subdistrict_visitor" => $subdistrict_visitor
             ]
         ]);

@@ -12,13 +12,12 @@ class SubdistrictQrCodeService extends ResponseService
         $page = max(1, (int) request()->get('page', 1));
         $limit = max(1, (int) request()->get('limit', 40));
 
-        // Use eager loading for query data
-        $query = SubdistrictQrCode::with('subdistricts')
+      
+        $query = SubdistrictQrCode::with('subdistrict')
             ->join('subdistricts', 'subdistrict_qr_codes.subdistrict_code', '=', 'subdistricts.code')
             ->distinct()
             ->orderBy('subdistrict_qr_codes.created_at', 'desc');
 
-        // Filter by params
         if (request()->hasAny(['name'])) {
             $query->when(request('name'), function ($q, $name) {
                 $q->where('subdistricts.name', 'like', '%' . $name . '%');
@@ -39,7 +38,9 @@ class SubdistrictQrCodeService extends ResponseService
 
     public function getSubdistrictQrCodeDetail($subdistrict_code)
     {
-        $subdistrict_qr_code = SubdistrictQrCode::where('subdistrict_code', $subdistrict_code)->first();
+       
+        $subdistrict_qr_code = SubdistrictQrCode::with('subdistrict')->where('subdistrict_code', $subdistrict_code)->first();
+
         if (!$subdistrict_qr_code) {
             return $this->errorJsonResponse(404, null, 'Kode QR Kecamatan tidak ditemukan');
         }
@@ -52,11 +53,17 @@ class SubdistrictQrCodeService extends ResponseService
         if ($subdistrict_qr_code) {
             return $this->errorJsonResponse(400, null, 'Kode QR Kecamatan sudah ada');
         }
+
+    
         $subdistrict_qr_code = SubdistrictQrCode::create([
             'subdistrict_code' => $request->subdistrict_code,
+            // 'link_qr_code'     => "https://tamusekolah.id/form/subdistrict/$request->subdistrict_code",
             'link_qr_code' => "https://tamudesa.id/form/subdistrict/$request->subdistrict_code",
-            'status'       => 1
+            'status'           => 1
         ]);
+
+        $subdistrict_qr_code->load('subdistrict');
+
         return $this->createdJsonResponse(201, null, 'Berhasil menambahkan data kode QR Kecamatan', new SubdistrictQrCodeResource($subdistrict_qr_code));
     }
 
@@ -66,10 +73,13 @@ class SubdistrictQrCodeService extends ResponseService
         if (!$subdistrict_qr_code) {
             return $this->errorJsonResponse(404, null, 'Kode QR Kecamatan tidak ditemukan');
         }
+
         $subdistrict_qr_code->update([
-            'status'       => $request->status
+            'status' => $request->status
         ]);
-        return $this->updatedJsonResponse(200, null, 'Berhasil mengubah data kode QR Kecamatan', new SubdistrictQrCodeResource($subdistrict_qr_code));
+
+      
+        return $this->updatedJsonResponse(200, null, 'Berhasil mengubah data kode QR Kecamatan', new SubdistrictQrCodeResource($subdistrict_qr_code->load('subdistrict')));
     }
 
     public function deleteSubdistrictQrCode($id)

@@ -38,4 +38,12 @@ class School extends Model
     {
         return $this->belongsTo(Village::class, 'village_code', 'code');
     }
+    public function profiles()
+    {
+        return $this->hasMany(Profile::class, 'school_code', 'school_code');
+    }
+    public function qr_code()
+    {
+        return $this->hasOne(QrCode::class, 'school_code', 'school_code');
+    }
 }

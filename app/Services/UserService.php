@@ -57,6 +57,7 @@ class UserService extends ResponseService
         $user = Auth::user();
         return $this->successJsonResponse(200, null, 'Berhasil menampilkan detail data user anda', new UserResource($user));
     }
+
     public  function getUserDetail($id)
     {
         $user = User::find($id);
@@ -75,6 +76,7 @@ class UserService extends ResponseService
             'level' => $request->level ?? 2,
         ]);
         $user->save();
+
         Profile::create([
             'user_id' => $user->id,
             'fullname' => $user->username,
@@ -82,7 +84,7 @@ class UserService extends ResponseService
             'district_code' => 0,
             'subdistrict_code' => 0,
             'village_code' => 0,
-            'school_code' => $request->school_code ?? null,
+            'school_id' => $request->school_id ?? null,
         ]);
 
         return $this->createdJsonResponse(201, null, 'Berhasil menambahkan data user', new UserResource($user));
@@ -90,13 +92,12 @@ class UserService extends ResponseService
 
     public function updateUser(Request $request, $id)
     {
-        // check if user exist
         $user = User::where('id', $id)->first();
         if (!$user) {
             return $this->errorJsonResponse(404,  null, 'Data user tidak ditemukan');
         }
 
-        // check unique nik and npwp
+
         if ($request->username && $request->username !== $user->username) {
             $existUsername = User::where('username', $request->username)->first();
             if ($existUsername) {
@@ -109,7 +110,6 @@ class UserService extends ResponseService
             }
         }
 
-        // user data allowed
         $user->username = $request->username ?? $user->username;
         $user->email = $request->email ?? $user->email;
         $password = $request->password;
@@ -129,17 +129,16 @@ class UserService extends ResponseService
             return $this->errorJsonResponse(404,  null, 'Data user tidak ditemukan');
         }
 
-        // toggle status aktif/nonaktif
+
         $user->is_active = $user->is_active == 1 ? 0 : 1;
         $user->save();
 
-        // update qr code status
         if ($user->level == 2) {
             $qr_code = QrCode::where('village_code', $user->profile->village_code)
                 ->update(['status' => $user->is_active]);
         }
 
-        // update qr code status
+
         if ($user->level == 3) {
             $subdistrict_qr_code = SubdistrictQrCode::where('subdistrict_code', $user->profile->subdistrict_code)
                 ->update(['status' => $user->is_active]);
@@ -163,19 +162,17 @@ class UserService extends ResponseService
 
     public function destroyUser($id)
     {
-        $user = User::find($id);
-        if (!$user) {
-            return $this->errorJsonResponse(404,  null, 'Data user tidak ditemukan');
+        if (!is_numeric($id)) {
+            return $this->errorJsonResponse(400, null, 'Format ID tidak valid');
         }
 
-        // if has profile, delete profile
+        $user = User::find($id);
+        if (!$user) {
+            return $this->errorJsonResponse(404, null, 'Data user tidak ditemukan');
+        }
+
         if ($user->profile) {
             $user->profile->delete();
-        } else {
-            $profile = Profile::where('user_id', $id)->first();
-            if ($profile) {
-                $profile->delete();
-            }
         }
 
         $user->delete();

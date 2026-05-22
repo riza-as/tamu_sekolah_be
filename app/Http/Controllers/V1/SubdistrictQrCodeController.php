@@ -8,10 +8,8 @@ use Illuminate\Http\Request;
 
 class SubdistrictQrCodeController extends Controller
 {
-    public function __construct(private SubdistrictQrCodeService $subdistrictCodeService)
-    {
-        return $this->subdistrictCodeService = $subdistrictCodeService;
-    }
+  
+    public function __construct(private SubdistrictQrCodeService $subdistrictCodeService) {}
 
     public function index()
     {

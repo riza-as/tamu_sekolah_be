@@ -16,7 +16,7 @@ class SchoolResource extends JsonResource
         'village_code' => $this->village_code,
         'school_code' => $this->school_code,
         'level_id' => $this->level_id,
-        'statuse_id' => $this->status_id,
+        'status_id' => $this->status_id,
 
         // RELATION
         'village' => $this->village,

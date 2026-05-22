@@ -2,10 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Objective;
-// use App\Models\Village;
-use App\Models\School;
-use App\Models\VisitorType;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -15,16 +11,16 @@ class VisitorResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'school' => School::where('school_code', $this->school_code)->first(),
+            'school' => $this->school, 
             'school_level' => $this->school?->level?->name,
             'school_status' => $this->school?->status?->name,
-            'visitor_type' => new VisitorTypeResource(VisitorType::where('id', $this->visitor_type_id)->first()),
+            'visitor_type' => new VisitorTypeResource($this->visitorType),
+            'objective' => new ObjectiveResource($this->objective),
             'fullname' => $this->fullname,
             'photo_visitor' => $this->photo_visitor,
             'address' => $this->address,
-            'objective' => new ObjectiveResource(Objective::where('id', $this->objective_id)->first()),
             'information' => $this->information,
-            'created_at' => $this->created_at
+            'created_at' => $this->created_at ? $this->created_at->toIso8601String() : null
         ];
     }
 }

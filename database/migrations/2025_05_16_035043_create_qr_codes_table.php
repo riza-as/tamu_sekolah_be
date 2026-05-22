@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('qr_codes', function (Blueprint $table) {
             $table->id();
-            $table->string('village_code');
+            $table->string('school_code');
             $table->string('link_qr_code');
             $table->integer('status')->default(1);
             $table->timestamps();

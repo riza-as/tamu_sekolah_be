@@ -29,7 +29,10 @@ Route::middleware('cors')->prefix('v1')->group(function () {
         Route::get('subdistrict', [SubdistrictController::class, 'index']);
         Route::get('village', [VillageController::class, 'index']);
         Route::get('village/{id}', [VillageController::class, 'show']);
+        Route::get('school', [SchoolController::class, 'index']);
+        Route::get('school/{id}', [SchoolController::class, 'show']);
     });
+
     // Qr Code
     Route::get('qr-code/{id}', [QrCodeController::class, 'show']);
     Route::get('subdistrict-qr-code/{subdistrict_code}', [SubdistrictQrCodeController::class, 'show']);
@@ -129,12 +132,12 @@ Route::middleware('jwt_verify')->prefix('v1')->group(function () {
         Route::delete('{id}', [SubdistrictVisitorController::class, 'destroy']);
     });
 
-    //School
-    Route::group(['prefix' => 'school'], function () {
+    // School
+    Route::group(['prefix' => 'schools'], function () {
         Route::get('', [SchoolController::class, 'index']);
-        Route::get('{id}', [SchoolController::class, 'show']);
         Route::post('', [SchoolController::class, 'store']);
-        Route::post('{school_code}/update', [SchoolController::class, 'update']);
+        Route::get('{id}', [SchoolController::class, 'show']);
+        Route::put('{school_code}', [SchoolController::class, 'update']);
         Route::delete('{school_code}', [SchoolController::class, 'destroy']);
     });
 });
