@@ -22,6 +22,7 @@ return new class extends Migration
             $table->integer('district_code');
             $table->integer('subdistrict_code');
             $table->bigInteger('village_code');
+            $table->string('school_code');
             $table->timestamps();
         });
     }

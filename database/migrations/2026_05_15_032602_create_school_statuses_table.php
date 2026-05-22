@@ -12,13 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('school_statuses', function (Blueprint $table) {
-            // Kolom id sebagai BIGINT Primary Key (Auto-increment)
             $table->id(); 
-            
-            // Kolom name dengan tipe VARCHAR, panjang 50, dan nullable
             $table->string('name', 50)->nullable();
-            
-            // Menambahkan created_at dan updated_at (opsional, tapi standar Laravel)
             $table->timestamps();
         });
     }
